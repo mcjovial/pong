@@ -90,6 +90,12 @@ function ballReset() {
   ballX = width / 2;
   ballY = height / 2;
   speedY = 3;
+
+  socket.emit('ballMove', {
+    ballX,
+    ballY,
+    score
+  });
 }
 
 // Adjust Ball Movement
@@ -100,6 +106,11 @@ function ballMove() {
   if (playerMoved) {
     ballX += speedX;
   }
+  socket.emit('ballMove', {
+    ballX,
+    ballY,
+    score
+  });
 }
 
 // Determine What Ball Bounces Off, Score Points, Reset Ball
@@ -153,24 +164,12 @@ function ballBoundaries() {
   }
 }
 
-// Computer Movement
-// function computerAI() {
-//   if (playerMoved) {
-//     if (paddleX[1] + paddleDiff < ballX) {
-//       paddleX[1] += computerSpeed;
-//     } else {
-//       paddleX[1] -= computerSpeed;
-//     }
-//     if (paddleX[1] < 0) {
-//       paddleX[1] = 0;
-//     } else if (paddleX[1] > (width - paddleWidth)) {
-//       paddleX[1] = width - paddleWidth;
-//     }
-//   }
-// }
-
 // Called Every Frame
 function animate() {
+  if (isReferee) {
+    ballMove();
+    ballBoundaries();
+  }
   ballMove();
   renderCanvas();
   ballBoundaries();
@@ -222,4 +221,8 @@ socket.on('paddleMove', (paddleData) => {
   // Toggle 1 into 0 and 0 into 1
   const opponentPaddleIndex = 1 - paddleIndex;
   paddleX[opponentPaddleIndex] = paddleData.xPosition;
+})
+
+socket.on('ballMove', (ballData) => {
+  ({ ballX, ballY, score } = ballData);
 })
